@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict
 import uuid
@@ -6,6 +7,16 @@ import threading
 import time
 
 app = FastAPI(title="Portal Despacho Inteligente")
+
+# ──────────────────────────────────────────────
+# CORS
+# ──────────────────────────────────────────────
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ──────────────────────────────────────────────
 # MODELOS
@@ -26,15 +37,20 @@ class NuevoEnvioRequest(BaseModel):
     peso_kg: float
 
 
+# 🔥 NUEVO MODELO (Empresa C)
+class ConsultaCSVRequest(BaseModel):
+    numero_guia: str
+
+
 # ──────────────────────────────────────────────
-# ALMACÉN DE RESPUESTAS (SIMULADO)
+# ALMACÉN DE RESPUESTAS
 # ──────────────────────────────────────────────
 
 _respuestas: Dict[str, dict] = {}
 
 
 # ──────────────────────────────────────────────
-# FUNCIONES SIMULADAS (ASYNC FAKE)
+# FUNCIONES SIMULADAS
 # ──────────────────────────────────────────────
 
 def procesar_empresa_a(cid: str):
@@ -87,6 +103,29 @@ def consulta_empresa_a(req: ConsultaRequest):
     threading.Thread(
         target=procesar_empresa_a,
         args=(cid,),
+        daemon=True
+    ).start()
+
+    return {"correlation_id": cid}
+
+
+# 🔥 NUEVO ENDPOINT EMPRESA C (CSV)
+@app.post("/consulta/empresa-c")
+def consulta_empresa_c(req: ConsultaCSVRequest):
+    cid = str(uuid.uuid4())
+
+    _respuestas[cid] = {"estado": "procesando"}
+
+    threading.Thread(
+        target=lambda: (
+            time.sleep(1),
+            _respuestas.update({
+                cid: {
+                    "estado": "listo",
+                    "respuesta": f"Guía {req.numero_guia} encontrada en CSV — Ciudad: Bogotá, Peso: 15kg"
+                }
+            })
+        ),
         daemon=True
     ).start()
 

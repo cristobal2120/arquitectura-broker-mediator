@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plataforma Unificada de Seguimiento — Despacho Inteligente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:#0a0c10; --bg2:#111318; --bg3:#181b22; --border:#2a2f3e; --border2:#3a4157;
+    --text:#e8eaf2; --muted:#6b7292; --accent:#5b7cfa; --teal:#2dd4aa;
+    --coral:#f97c6e; --amber:#f0a84e; --green:#4ade80; --red:#f87171;
+    --soap:#a78bfa; --rest:#34d399; --ftp:#fbbf24;
+    --font-mono:'JetBrains Mono',monospace; --font-sans:'Syne',sans-serif;
+    --r:10px; --rl:16px;
+  }
+  html { font-size:15px; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); min-height:100vh; display:grid; grid-template-columns:272px 1fr; grid-template-rows:auto 1fr; }
+  body::before { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px); pointer-events:none; z-index:9999; }
+
+  /* TOP BAR */
+  .topbar { grid-column:1/-1; display:flex; align-items:center; gap:12px; padding:0 22px; height:56px; background:var(--bg2); border-bottom:1px solid var(--border); }
+  .logo { font-size:.95rem; font-weight:800; letter-spacing:-.02em; background:linear-gradient(135deg,var(--accent),var(--teal)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; white-space:nowrap; }
+  .tag { font-family:var(--font-mono); font-size:.58rem; color:var(--muted); background:var(--bg3); border:1px solid var(--border); padding:2px 8px; border-radius:20px; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+  .lgbadges { display:flex; gap:5px; }
+  .lb { font-family:var(--font-mono); font-size:.57rem; font-weight:700; padding:2px 7px; border-radius:4px; letter-spacing:.04em; text-transform:uppercase; }
+  .lb-soap { background:rgba(167,139,250,.14); color:var(--soap); border:1px solid rgba(167,139,250,.28); }
+  .lb-rest { background:rgba(52,211,153,.14);  color:var(--rest); border:1px solid rgba(52,211,153,.28); }
+  .lb-ftp  { background:rgba(251,191,36,.14);  color:var(--ftp);  border:1px solid rgba(251,191,36,.28); }
+  .hw { margin-left:auto; display:flex; align-items:center; gap:6px; background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:4px 10px; }
+  .hw label { font-family:var(--font-mono); font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  #base-url { background:none; border:none; outline:none; font-family:var(--font-mono); font-size:.74rem; color:var(--accent); width:190px; }
+  .btn-ping { background:var(--bg3); border:1px solid var(--border); color:var(--muted); border-radius:7px; padding:5px 12px; font-family:var(--font-sans); font-size:.68rem; font-weight:700; cursor:pointer; transition:all .15s; }
+  .btn-ping:hover { border-color:var(--border2); color:var(--text); }
+  .ts { display:flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:.67rem; }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--muted); transition:background .3s; }
+  .dot.on { background:var(--green); box-shadow:0 0 8px var(--green); }
+  .dot.off{ background:var(--red); }
+  #stxt { color:var(--muted); }
+
+  /* SIDEBAR */
+  .sidebar { background:var(--bg2); border-right:1px solid var(--border); padding:14px 0; overflow-y:auto; }
+  .ss { padding:0 16px 5px; font-family:var(--font-mono); font-size:.57rem; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-top:14px; }
+  .ni { display:flex; align-items:center; gap:9px; padding:9px 17px; cursor:pointer; border-left:3px solid transparent; transition:all .15s; user-select:none; }
+  .ni:hover { background:var(--bg3); }
+  .ni.active { background:var(--bg3); border-left-color:var(--accent); }
+  .nm { font-family:var(--font-mono); font-size:.57rem; font-weight:700; padding:2px 5px; border-radius:4px; min-width:34px; text-align:center; letter-spacing:.04em; }
+  .nm.post { background:rgba(91,124,250,.16); color:var(--accent); }
+  .nm.get  { background:rgba(45,212,170,.16); color:var(--teal); }
+  .nl { font-size:.75rem; font-weight:600; color:var(--text); white-space:nowrap; }
+  .nsub { font-family:var(--font-mono); font-size:.58rem; color:var(--muted); margin-top:1px; white-space:nowrap; }
+  .nt { margin-left:auto; font-family:var(--font-mono); font-size:.55rem; font-weight:700; padding:1px 5px; border-radius:3px; white-space:nowrap; }
+  .nt.soap { background:rgba(167,139,250,.1); color:var(--soap); }
+  .nt.rest { background:rgba(52,211,153,.1);  color:var(--rest); }
+  .nt.ftp  { background:rgba(251,191,36,.1);  color:var(--ftp); }
+  .nt.med  { background:rgba(249,124,110,.1); color:var(--coral); }
+  .nt.new  { background:rgba(91,124,250,.1);  color:var(--accent); }
+  .shl { padding:0 16px; margin-top:6px; }
+  .hi { display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); cursor:pointer; }
+  .hi:hover .hcid { color:var(--accent); }
+  .hdot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .hdot.ok { background:var(--green); }
+  .hdot.err{ background:var(--red); }
+  .hdot.pending { background:var(--amber); animation:pulse 1.4s ease-in-out infinite; }
+  .hcid { font-family:var(--font-mono); font-size:.59rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; transition:color .15s; }
+  .hsrc { font-family:var(--font-mono); font-size:.57rem; color:var(--border2); flex-shrink:0; }
+
+  /* MAIN */
+  .main { overflow-y:auto; padding:24px 28px; }
+  .panel { display:none; }
+  .panel.active { display:block; animation:fadeIn .2s ease; }
+
+  /* PANEL HEADER */
+  .ph { display:flex; align-items:center; gap:11px; margin-bottom:20px; flex-wrap:wrap; }
+  .pm { font-family:var(--font-mono); font-size:.7rem; font-weight:700; padding:4px 11px; border-radius:6px; }
+  .pm.post { background:rgba(91,124,250,.13); color:var(--accent); border:1px solid rgba(91,124,250,.26); }
+  .pm.get  { background:rgba(45,212,170,.13); color:var(--teal);   border:1px solid rgba(45,212,170,.26); }
+  .pp { font-family:var(--font-mono); font-size:.86rem; color:var(--text); }
+  .ptb { font-family:var(--font-mono); font-size:.63rem; font-weight:700; padding:3px 9px; border-radius:5px; }
+  .ptb.soap { background:rgba(167,139,250,.1); color:var(--soap); border:1px solid rgba(167,139,250,.22); }
+  .ptb.rest { background:rgba(52,211,153,.1);  color:var(--rest); border:1px solid rgba(52,211,153,.22); }
+  .ptb.ftp  { background:rgba(251,191,36,.1);  color:var(--ftp);  border:1px solid rgba(251,191,36,.22); }
+  .ptb.med  { background:rgba(249,124,110,.1); color:var(--coral);border:1px solid rgba(249,124,110,.22); }
+  .ptb.new  { background:rgba(91,124,250,.1);  color:var(--accent);border:1px solid rgba(91,124,250,.22); }
+  .pdesc { font-size:.74rem; color:var(--muted); margin-left:auto; }
+
+  /* FORM */
+  .fg { display:grid; gap:13px; margin-bottom:16px; }
+  .fgrp { display:flex; flex-direction:column; gap:5px; }
+  .flbl { font-family:var(--font-mono); font-size:.63rem; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+  .flbl span { color:var(--coral); margin-left:2px; }
+  .fi { background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:10px 13px; font-family:var(--font-mono); font-size:.79rem; color:var(--text); outline:none; transition:border-color .15s,box-shadow .15s; }
+  .fi:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,124,250,.09); }
+  .fi::placeholder { color:var(--border2); }
+  .fhint { font-family:var(--font-mono); font-size:.6rem; color:var(--muted); }
+
+  /* BUTTONS */
+  .btn { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:var(--r); border:none; cursor:pointer; font-family:var(--font-sans); font-size:.78rem; font-weight:700; letter-spacing:.02em; transition:all .15s; }
+  .btn-p { background:var(--accent); color:#fff; }
+  .btn-p:hover { background:#7090ff; transform:translateY(-1px); }
+  .btn-p:active { transform:none; }
+  .btn-g { background:var(--bg3); color:var(--muted); border:1px solid var(--border); }
+  .btn-g:hover { border-color:var(--border2); color:var(--text); }
+
+  /* CALLOUT */
+  .co { display:flex; gap:9px; padding:11px 14px; border-radius:var(--r); margin-bottom:17px; font-size:.77rem; line-height:1.55; }
+  .co-icon { flex-shrink:0; margin-top:1px; }
+  .co-info { background:rgba(91,124,250,.07); border:1px solid rgba(91,124,250,.17); color:#9aaef7; }
+  .co-warn { background:rgba(240,168,78,.07);  border:1px solid rgba(240,168,78,.17); color:#f0c87e; }
+  .co-soap { background:rgba(167,139,250,.07); border:1px solid rgba(167,139,250,.18); color:#c4b5fd; }
+  .co-rest { background:rgba(52,211,153,.07);  border:1px solid rgba(52,211,153,.18);  color:#6ee7b7; }
+  .co-ftp  { background:rgba(251,191,36,.07);  border:1px solid rgba(251,191,36,.18);  color:#fcd34d; }
+  .co-med  { background:rgba(249,124,110,.07); border:1px solid rgba(249,124,110,.18); color:#fca5a5; }
+
+  /* PRESET ROW */
+  .prow { display:flex; gap:7px; margin-bottom:15px; flex-wrap:wrap; align-items:center; }
+  .plbl { font-family:var(--font-mono); font-size:.6rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+
+  /* CID BOX */
+  .cb { display:none; align-items:center; gap:9px; margin-top:11px; padding:9px 13px; background:rgba(91,124,250,.07); border:1px solid rgba(91,124,250,.2); border-radius:var(--r); font-family:var(--font-mono); font-size:.68rem; }
+  .cb.vis { display:flex; }
+  .cbl { color:var(--muted); white-space:nowrap; }
+  .cbv { color:var(--accent); flex:1; word-break:break-all; }
+  .cbc { cursor:pointer; color:var(--muted); padding:2px 6px; border-radius:4px; border:1px solid var(--border); background:none; font-family:var(--font-mono); font-size:.58rem; transition:all .15s; }
+  .cbc:hover { color:var(--text); border-color:var(--border2); }
+
+  /* POLL */
+  .pw { display:none; align-items:center; gap:9px; margin-top:9px; padding:9px 13px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); font-family:var(--font-mono); font-size:.68rem; color:var(--muted); }
+  .pw.on { display:flex; }
+  .sp { width:13px; height:13px; border-radius:50%; border:2px solid var(--border2); border-top-color:var(--accent); animation:spin .8s linear infinite; flex-shrink:0; }
+
+  /* RESPONSE */
+  .ra { margin-top:20px; border:1px solid var(--border); border-radius:var(--rl); overflow:hidden; }
+  .rb { display:flex; align-items:center; gap:9px; padding:9px 15px; background:var(--bg3); border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:.66rem; }
+  .rbdg { padding:2px 8px; border-radius:4px; font-weight:700; font-size:.6rem; }
+  .ok   { background:rgba(74,222,128,.16); color:var(--green); }
+  .er   { background:rgba(248,113,113,.16); color:var(--red); }
+  .pe   { background:rgba(240,168,78,.16);  color:var(--amber); }
+  .rtime { color:var(--muted); margin-left:auto; }
+  .rbody { padding:15px 17px; font-family:var(--font-mono); font-size:.74rem; line-height:1.7; color:var(--muted); min-height:70px; white-space:pre-wrap; word-break:break-all; }
+  .rbody.hd { color:var(--text); }
+  .jk { color:#7eb8f7; } .js { color:#a8e6cf; } .jn { color:var(--amber); } .jb { color:var(--coral); } .jnl { color:var(--muted); }
+
+  /* SAVED */
+  .div { height:1px; background:var(--border); margin:18px 0; }
+  .scgrid { display:grid; gap:7px; margin-top:7px; }
+  .sci { display:flex; align-items:center; gap:9px; padding:8px 12px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); }
+  .scid { font-family:var(--font-mono); font-size:.67rem; color:var(--accent); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .scs  { font-size:.6rem; color:var(--muted); background:var(--bg); border:1px solid var(--border); padding:2px 5px; border-radius:4px; white-space:nowrap; }
+
+  /* RESULT LABELS */
+  .rok { color:var(--green); font-weight:700; }
+  .rer { color:var(--red);   font-weight:700; }
+
+  @keyframes spin   { to{transform:rotate(360deg)} }
+  @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.45} }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+  .pls { animation:pulse 1.4s ease-in-out infinite; }
+  ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:var(--bg2)} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="logo">Plataforma Unificada de Seguimiento</span>
+  <span class="tag">Broker + Mediator</span>
+  <div class="lgbadges">
+    <span class="lb lb-soap">SOAP</span>
+    <span class="lb lb-rest">REST</span>
+    <span class="lb lb-ftp">CSV/FTP</span>
+  </div>
+  <div class="hw"><label>HOST</label><input id="base-url" type="text" value="http://localhost:8000" spellcheck="false"></div>
+  <button class="btn-ping" onclick="checkHealth()">Ping</button>
+  <div class="ts"><div class="dot" id="sdot"></div><span id="stxt">sin verificar</span></div>
+</header>
+
+<nav class="sidebar">
+  <div class="ss">Sistemas legacy</div>
+  <div class="ni active" onclick="sp('empresa-a',this)"><span class="nm post">POST</span><div><div class="nl">Empresa A</div><div class="nsub">/consulta/empresa-a</div></div><span class="nt soap">SOAP</span></div>
+  <div class="ni" onclick="sp('empresa-b',this)"><span class="nm post">POST</span><div><div class="nl">Empresa B</div><div class="nsub">/consulta/empresa-b</div></div><span class="nt rest">REST</span></div>
+  <div class="ni" onclick="sp('empresa-c',this)"><span class="nm post">POST</span><div><div class="nl">Empresa C</div><div class="nsub">/consulta/empresa-c</div></div><span class="nt ftp">CSV/FTP</span></div>
+  <div class="ss">Módulos internos</div>
+  <div class="ni" onclick="sp('despacho',this)"><span class="nm post">POST</span><div><div class="nl">Despacho</div><div class="nsub">/despacho</div></div><span class="nt med">Mediator</span></div>
+  <div class="ni" onclick="sp('nuevo-envio',this)"><span class="nm post">POST</span><div><div class="nl">Nuevo Envío</div><div class="nsub">/nuevo-envio</div></div><span class="nt new">4to srv</span></div>
+  <div class="ss">Polling</div>
+  <div class="ni" onclick="sp('respuesta',this)"><span class="nm get">GET</span><div><div class="nl">Consultar Respuesta</div><div class="nsub">/respuesta/{cid}</div></div></div>
+  <div class="ss" style="margin-top:18px;">Historial sesión</div>
+  <div class="shl" id="hist"><div style="font-family:var(--font-mono);font-size:.6rem;color:var(--muted);padding:8px 0;">Sin peticiones aún</div></div>
+</nav>
+
+<main class="main">
+
+  <!-- EMPRESA A -->
+  <div class="panel active" id="panel-empresa-a">
+    <div class="ph"><span class="pm post">POST</span><span class="pp">/consulta/empresa-a</span><span class="ptb soap">Sistema SOAP</span><span class="pdesc">Catálogo — latencia 2 s</span></div>
+    <div class="co co-soap"><span class="co-icon">📡</span><span><strong>Sistema heredado SOAP.</strong> Empresa A usa un XML Web Service que tarda ~2 s en responder. Gracias al Broker, el portal retorna el <code>correlation_id</code> en &lt;50 ms y el resultado llega de forma asíncrona sin bloquear al cliente.</span></div>
+    <div class="fg"><div class="fgrp"><label class="flbl">SKU <span>*</span></label><input class="fi" id="ea-sku" type="text" value="SKU-001" placeholder="SKU-001"><span class="fhint">Identificador del producto en el catálogo SOAP de Empresa A</span></div></div>
+    <button class="btn btn-p" onclick="ha({path:'/consulta/empresa-a',payload:{sku:v('ea-sku')},px:'ea',src:'SOAP',msg:'Procesando SOAP envelope… espera ~2 s'})">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="9 3 14 8 9 13"/></svg>Enviar petición SOAP
+    </button>
+    <div class="cb" id="ea-cb"><span class="cbl">correlation_id:</span><span class="cbv" id="ea-cv"></span><button class="cbc" onclick="cc('ea-cv')">Copiar</button><button class="btn btn-g" style="padding:4px 9px;font-size:.66rem;" onclick="gr('ea-cv')">Consultar →</button></div>
+    <div class="pw" id="ea-pw"><div class="sp"></div><span id="ea-pm">Procesando SOAP <span class="pls">...</span></span></div>
+    <div class="ra" id="ea-ra" style="display:none"><div class="rb"><span class="rbdg" id="ea-badge">—</span><span style="color:var(--muted);font-family:var(--font-mono);font-size:.66rem;">/consulta/empresa-a</span><span class="rtime" id="ea-time"></span></div><pre class="rbody" id="ea-body"></pre></div>
+  </div>
+
+  <!-- EMPRESA B -->
+  <div class="panel" id="panel-empresa-b">
+    <div class="ph"><span class="pm post">POST</span><span class="pp">/consulta/empresa-b</span><span class="ptb rest">Sistema REST</span><span class="pdesc">Inventario</span></div>
+    <div class="co co-rest"><span class="co-icon">🔗</span><span><strong>Sistema REST moderno.</strong> Empresa B expone una API REST estándar — la más rápida de las tres empresas adquiridas. El Broker la integra de igual forma que las otras sin modificar el portal.</span></div>
+    <div class="fg"><div class="fgrp"><label class="flbl">SKU <span>*</span></label><input class="fi" id="eb-sku" type="text" value="SKU-002" placeholder="SKU-002"><span class="fhint">Identificador del producto en el inventario REST de Empresa B</span></div></div>
+    <button class="btn btn-p" onclick="ha({path:'/consulta/empresa-b',payload:{sku:v('eb-sku')},px:'eb',src:'REST',msg:'Consultando API REST'})">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="9 3 14 8 9 13"/></svg>Enviar petición REST
+    </button>
+    <div class="cb" id="eb-cb"><span class="cbl">correlation_id:</span><span class="cbv" id="eb-cv"></span><button class="cbc" onclick="cc('eb-cv')">Copiar</button><button class="btn btn-g" style="padding:4px 9px;font-size:.66rem;" onclick="gr('eb-cv')">Consultar →</button></div>
+    <div class="pw" id="eb-pw"><div class="sp"></div><span id="eb-pm">Consultando API REST <span class="pls">...</span></span></div>
+    <div class="ra" id="eb-ra" style="display:none"><div class="rb"><span class="rbdg" id="eb-badge">—</span><span style="color:var(--muted);font-family:var(--font-mono);font-size:.66rem;">/consulta/empresa-b</span><span class="rtime" id="eb-time"></span></div><pre class="rbody" id="eb-body"></pre></div>
+  </div>
+
+  <!-- EMPRESA C -->
+  <div class="panel" id="panel-empresa-c">
+    <div class="ph"><span class="pm post">POST</span><span class="pp">/consulta/empresa-c</span><span class="ptb ftp">CSV / FTP</span><span class="pdesc">Rastreo de guías via archivo plano</span></div>
+    <div class="co co-ftp"><span class="co-icon">📂</span><span><strong>Sistema heredado CSV/FTP.</strong> Empresa C no tiene API: sus registros se actualizan en archivos <code>.csv</code> depositados en un servidor FTP. El servidor los parsea y devuelve la información. Sin el Broker, el portal necesitaría saber conectarse a FTP — con el Broker solo publica un mensaje.</span></div>
+    <div class="fg"><div class="fgrp"><label class="flbl">Número de Guía <span>*</span></label><input class="fi" id="ec-guia" type="text" value="GU-2024-001" placeholder="GU-2024-001"><span class="fhint">Número de rastreo del envío en el sistema FTP de Empresa C</span></div></div>
+    <div class="prow">
+      <span class="plbl">Ejemplos:</span>
+      <button class="btn btn-g" style="padding:5px 10px;font-size:.66rem;" onclick="sv('ec-guia','GU-2024-001')">GU-2024-001</button>
+      <button class="btn btn-g" style="padding:5px 10px;font-size:.66rem;" onclick="sv('ec-guia','GU-2024-045')">GU-2024-045</button>
+      <button class="btn btn-g" style="padding:5px 10px;font-size:.66rem;" onclick="sv('ec-guia','GU-2024-099')">GU-2024-099</button>
+    </div>
+    <button class="btn btn-p" onclick="ha({path:'/consulta/empresa-c',payload:{numero_guia:v('ec-guia')},px:'ec',src:'CSV/FTP',msg:'Leyendo archivo CSV vía FTP'})">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="9 3 14 8 9 13"/></svg>Consultar CSV/FTP
+    </button>
+    <div class="cb" id="ec-cb"><span class="cbl">correlation_id:</span><span class="cbv" id="ec-cv"></span><button class="cbc" onclick="cc('ec-cv')">Copiar</button><button class="btn btn-g" style="padding:4px 9px;font-size:.66rem;" onclick="gr('ec-cv')">Consultar →</button></div>
+    <div class="pw" id="ec-pw"><div class="sp"></div><span id="ec-pm">Leyendo CSV vía FTP <span class="pls">...</span></span></div>
+    <div class="ra" id="ec-ra" style="display:none"><div class="rb"><span class="rbdg" id="ec-badge">—</span><span style="color:var(--muted);font-family:var(--font-mono);font-size:.66rem;">/consulta/empresa-c</span><span class="rtime" id="ec-time"></span></div><pre class="rbody" id="ec-body"></pre></div>
+  </div>
+
+  <!-- DESPACHO -->
+  <div class="panel" id="panel-despacho">
+    <div class="ph"><span class="pm post">POST</span><span class="pp">/despacho</span><span class="ptb med">Mediator</span><span class="pdesc">Coordinación Camión · Almacén · Seguros</span></div>
+    <div class="co co-med"><span class="co-icon">🔀</span><span><strong>Patrón Mediator activo.</strong> El <code>CoordinadorDespacho</code> orquesta sin que <code>Camion</code>, <code>Almacen</code> o <code>Seguros</code> se conozcan entre sí. Flujo: verificar stock → validar póliza → reservar stock.</span></div>
+    <div class="fg" style="grid-template-columns:1fr 1fr 1fr;">
+      <div class="fgrp"><label class="flbl">Pedido ID <span>*</span></label><input class="fi" id="d-ped" type="text" value="PED001"><span class="fhint">PED001=con stock · PED002=sin stock</span></div>
+      <div class="fgrp"><label class="flbl">Camión ID <span>*</span></label><input class="fi" id="d-cam" type="text" value="C001"><span class="fhint">C001 o C002</span></div>
+      <div class="fgrp"><label class="flbl">Peso kg <span>*</span></label><input class="fi" id="d-peso" type="number" value="500" min="1"><span class="fhint">&gt;8000 → seguro inválido</span></div>
+    </div>
+    <div class="prow">
+      <span class="plbl">Casos:</span>
+      <button class="btn btn-g" style="padding:5px 10px;font-size:.66rem;color:var(--green);border-color:rgba(74,222,128,.3);"  onclick="sd('PED001','C001',500)">✅ APROBADO</button>
+      <button class="btn btn-g" style="padding:5px 10px;font-size:.66rem;color:var(--red);border-color:rgba(248,113,113,.3);"   onclick="sd('PED002','C001',100)">❌ Sin stock</button>
+      <button class="btn btn-g" style="padding:5px 10px;font-size:.66rem;color:var(--amber);border-color:rgba(240,168,78,.3);" onclick="sd('PED001','C001',9000)">⚠️ Seguro inválido</button>
+    </div>
+    <button class="btn btn-p" onclick="sendDespacho()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="9 3 14 8 9 13"/></svg>Solicitar despacho
+    </button>
+    <div class="cb" id="d-cb"><span class="cbl">correlation_id:</span><span class="cbv" id="d-cv"></span><button class="cbc" onclick="cc('d-cv')">Copiar</button><button class="btn btn-g" style="padding:4px 9px;font-size:.66rem;" onclick="gr('d-cv')">Consultar →</button></div>
+    <div class="pw" id="d-pw"><div class="sp"></div><span>Coordinador ejecutando flujo <span class="pls">...</span></span></div>
+    <div class="ra" id="d-ra" style="display:none"><div class="rb"><span class="rbdg" id="d-badge">—</span><span id="d-rlbl" style="color:var(--muted);font-family:var(--font-mono);font-size:.66rem;">/despacho</span><span class="rtime" id="d-time"></span></div><pre class="rbody" id="d-body"></pre></div>
+  </div>
+
+  <!-- NUEVO ENVÍO -->
+  <div class="panel" id="panel-nuevo-envio">
+    <div class="ph"><span class="pm post">POST</span><span class="pp">/nuevo-envio</span><span class="ptb new">4to Servidor</span><span class="pdesc">Demo de escalabilidad horizontal</span></div>
+    <div class="co co-info"><span class="co-icon">⚙</span><span><strong>Demo de escalabilidad.</strong> <code>NuevoEnvioServer</code> se añadió sin tocar <code>portal/api.py</code> ni <code>broker/producer.py</code>. Solo se creó la clase y se registró en <code>main.py</code>. Principio Open/Closed del patrón Broker.</span></div>
+    <div class="fg" style="grid-template-columns:1fr 1fr;">
+      <div class="fgrp"><label class="flbl">Ciudad destino <span>*</span></label><input class="fi" id="ne-ciudad" type="text" value="Medellín"></div>
+      <div class="fgrp"><label class="flbl">Peso kg <span>*</span></label><input class="fi" id="ne-peso" type="number" value="12.5" step="0.1" min="0.1"></div>
+    </div>
+    <button class="btn btn-p" onclick="ha({path:'/nuevo-envio',payload:{ciudad_destino:v('ne-ciudad'),peso_kg:parseFloat(v('ne-peso'))},px:'ne',src:'NuevoEnvio',msg:'NuevoEnvioServer procesando'})">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="9 3 14 8 9 13"/></svg>Registrar envío
+    </button>
+    <div class="cb" id="ne-cb"><span class="cbl">correlation_id:</span><span class="cbv" id="ne-cv"></span><button class="cbc" onclick="cc('ne-cv')">Copiar</button><button class="btn btn-g" style="padding:4px 9px;font-size:.66rem;" onclick="gr('ne-cv')">Consultar →</button></div>
+    <div class="pw" id="ne-pw"><div class="sp"></div><span>NuevoEnvioServer procesando <span class="pls">...</span></span></div>
+    <div class="ra" id="ne-ra" style="display:none"><div class="rb"><span class="rbdg" id="ne-badge">—</span><span style="color:var(--muted);font-family:var(--font-mono);font-size:.66rem;">/nuevo-envio</span><span class="rtime" id="ne-time"></span></div><pre class="rbody" id="ne-body"></pre></div>
+  </div>
+
+  <!-- RESPUESTA -->
+  <div class="panel" id="panel-respuesta">
+    <div class="ph"><span class="pm get">GET</span><span class="pp">/respuesta/{correlation_id}</span><span class="pdesc">Polling asíncrono de resultados</span></div>
+    <div class="fg"><div class="fgrp"><label class="flbl">Correlation ID <span>*</span></label><input class="fi" id="r-cid" type="text" placeholder="Pega el correlation_id aquí" spellcheck="false"><span class="fhint">Se rellena automáticamente al pulsar "Consultar →" en cualquier panel</span></div></div>
+    <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-p" onclick="sendR()"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="6"/><polyline points="8 5 8 8 10 10"/></svg>Consultar ahora</button>
+      <button class="btn btn-g" id="apbtn" onclick="toggleAP()">Auto-poll: OFF</button>
+      <span style="font-family:var(--font-mono);font-size:.63rem;color:var(--muted);" id="apst"></span>
+    </div>
+    <div id="scwrap" style="display:none;"><div class="div"></div><div style="font-family:var(--font-mono);font-size:.63rem;color:var(--muted);margin-bottom:7px;text-transform:uppercase;letter-spacing:.06em;">CIDs de esta sesión</div><div class="scgrid" id="sclist"></div></div>
+    <div class="ra" id="r-ra" style="display:none"><div class="rb"><span class="rbdg" id="r-badge">—</span><span id="r-pdis" style="color:var(--muted);font-family:var(--font-mono);font-size:.66rem;"></span><span class="rtime" id="r-time"></span></div><pre class="rbody" id="r-body"></pre></div>
+  </div>
+
+</main>
+
+<script>
+const cids=[], gb=()=>document.getElementById('base-url').value.replace(/\/$/,''), v=id=>document.getElementById(id).value.trim(), sv=(id,val)=>document.getElementById(id).value=val;
+let apInt=null, apOn=false;
+
+function sp(name,el){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));document.getElementById('panel-'+name).classList.add('active');el.classList.add('active');}
+
+async function checkHealth(){const dot=document.getElementById('sdot'),txt=document.getElementById('stxt');dot.className='dot pls';txt.textContent='verificando...';try{const t=Date.now(),r=await fetch(gb()+'/'),ms=Date.now()-t;r.ok?(dot.className='dot on',txt.textContent=`online · ${ms}ms`):(dot.className='dot off',txt.textContent='error');}catch{dot.className='dot off';txt.textContent='sin conexión';}}
+
+function hl(obj){return JSON.stringify(obj,null,2).replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+\.?\d*([eE][+\-]?\d+)?)/g,m=>{let c='jn';if(/^"/.test(m))c=/:$/.test(m)?'jk':'js';else if(/true|false/.test(m))c='jb';else if(/null/.test(m))c='jnl';return`<span class="${c}">${m}</span>`;});}
+
+function rr(px,data,ms,ok){const b=document.getElementById(px+'-body'),dg=document.getElementById(px+'-badge'),t=document.getElementById(px+'-time'),a=document.getElementById(px+'-ra');a.style.display='block';b.classList.add('hd');b.innerHTML=hl(data);if(ms!=null)t.textContent=ms+' ms';if(!ok){dg.textContent='ERROR';dg.className='rbdg er';return;}if(data.estado==='procesando'){dg.textContent='procesando';dg.className='rbdg pe';return;}const r=(data.respuesta||'').toUpperCase();if(r.includes('RECHAZADO')||r.includes('ERROR')){dg.textContent='RECHAZADO';dg.className='rbdg er';}else{dg.textContent='200 OK';dg.className='rbdg ok';}}
+
+function addH(cid,src,st){const ex=cids.find(c=>c.cid===cid);ex?ex.st=st:cids.unshift({cid,src,st});document.getElementById('hist').innerHTML=cids.slice(0,10).map(c=>`<div class="hi" onclick="gbi('${c.cid}')"><div class="hdot ${c.st}"></div><span class="hcid" title="${c.cid}">${c.cid.slice(0,8)}…</span><span class="hsrc">${c.src}</span></div>`).join('');const w=document.getElementById('scwrap'),l=document.getElementById('sclist');w.style.display='block';l.innerHTML=cids.map(c=>`<div class="sci"><span class="scid" title="${c.cid}">${c.cid}</span><span class="scs">${c.src}</span><button class="btn btn-g" style="padding:3px 8px;font-size:.62rem;" onclick="lc('${c.cid}')">Usar</button></div>`).join('');}
+
+async function dp(path,payload){const t=Date.now(),r=await fetch(gb()+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});return{data:await r.json(),ms:Date.now()-t,ok:r.ok};}
+
+async function pollR(cid,cb,tries=16,iv=600){for(let i=0;i<tries;i++){await new Promise(r=>setTimeout(r,iv));try{const t=Date.now(),r=await fetch(gb()+'/respuesta/'+cid),d=await r.json(),ms=Date.now()-t;cb(d,ms,r.ok);if(d.estado==='listo'||d.estado==='no_encontrado')break;}catch(e){cb({error:e.message},null,false);break;}}}
+
+async function ha({path,payload,px,src,msg}){const cb=document.getElementById(px+'-cb'),cv=document.getElementById(px+'-cv'),pw=document.getElementById(px+'-pw');cb.classList.remove('vis');document.getElementById(px+'-ra').style.display='none';pw.classList.remove('on');if(msg){const pm=document.getElementById(px+'-pm');if(pm)pm.innerHTML=msg+' <span class="pls">...</span>';}try{const{data,ms,ok}=await dp(path,payload);if(ok&&data.correlation_id){const cid=data.correlation_id;cv.textContent=cid;cb.classList.add('vis');pw.classList.add('on');addH(cid,src,'pending');await pollR(cid,(r,rms,rok)=>{rr(px,r,rms,rok);if(r.estado==='listo'){pw.classList.remove('on');addH(cid,src,(r.respuesta||'').toUpperCase().includes('RECHAZADO')?'err':'ok');}});}else{pw.classList.remove('on');rr(px,data,ms,ok);}}catch(e){pw.classList.remove('on');rr(px,{error:'¿Está corriendo python main.py? '+e.message},null,false);}}
+
+function sd(p,c,w){sv('d-ped',p);sv('d-cam',c);document.getElementById('d-peso').value=w;}
+
+async function sendDespacho(){const ped=v('d-ped'),cam=v('d-cam'),peso=parseFloat(document.getElementById('d-peso').value);if(!ped||!cam||isNaN(peso))return;const cb=document.getElementById('d-cb'),cv=document.getElementById('d-cv'),pw=document.getElementById('d-pw');cb.classList.remove('vis');document.getElementById('d-ra').style.display='none';pw.classList.remove('on');try{const{data,ms,ok}=await dp('/despacho',{pedido_id:ped,camion_id:cam,peso_kg:peso});if(ok&&data.correlation_id){const cid=data.correlation_id;cv.textContent=cid;cb.classList.add('vis');pw.classList.add('on');addH(cid,'Mediator','pending');await pollR(cid,(r,rms,rok)=>{if(r.estado==='listo'){const lbl=document.getElementById('d-rlbl'),up=(r.respuesta||'').toUpperCase();lbl.innerHTML=up.includes('APROBADO')?'<span class="rok">✅ APROBADO</span>':`<span class="rer">❌ ${r.respuesta}</span>`;}rr('d',r,rms,rok);if(r.estado==='listo'){pw.classList.remove('on');addH(cid,'Mediator',(r.respuesta||'').toUpperCase().includes('RECHAZADO')?'err':'ok');}});}else{pw.classList.remove('on');rr('d',data,ms,ok);}}catch(e){pw.classList.remove('on');rr('d',{error:'No se pudo conectar: '+e.message},null,false);}}
+
+async function sendR(){const cid=v('r-cid');if(!cid)return;document.getElementById('r-pdis').textContent='/respuesta/'+cid;document.getElementById('r-ra').style.display='block';try{const t=Date.now(),r=await fetch(gb()+'/respuesta/'+cid),d=await r.json();rr('r',d,Date.now()-t,r.ok);}catch(e){rr('r',{error:'No se pudo conectar.'},null,false);}}
+
+function toggleAP(){apOn=!apOn;const btn=document.getElementById('apbtn'),st=document.getElementById('apst');apOn?(btn.textContent='Auto-poll: ON',btn.style.cssText='color:var(--teal);border-color:var(--teal);',st.textContent='Consultando cada 1 s…',apInt=setInterval(()=>{if(v('r-cid'))sendR();},1000)):(clearInterval(apInt),btn.textContent='Auto-poll: OFF',btn.style.cssText='',st.textContent='');}
+
+function gr(sid){gbi(document.getElementById(sid).textContent);}
+function gbi(cid){sv('r-cid',cid);sp('respuesta',document.querySelectorAll('.ni')[5]);sendR();}
+function lc(cid){sv('r-cid',cid);sendR();}
+function cc(sid){navigator.clipboard.writeText(document.getElementById(sid).textContent).then(()=>{const b=event.target,o=b.textContent;b.textContent='✓';setTimeout(()=>b.textContent=o,1200);});}
+
+window.addEventListener('load',()=>setTimeout(checkHealth,500));
+</script>
+</body>
+</html>

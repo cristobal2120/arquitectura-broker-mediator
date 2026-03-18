@@ -35,27 +35,47 @@ class BaseServer(ABC):
 
 
 # ──────────────────────────────────────────────
-# SERVERS SIMULADOS (SIN KAFKA para evitar fallos)
+# SERVERS SIMULADOS (MEJORADOS)
 # ──────────────────────────────────────────────
 
 class EmpresaAServer(BaseServer):
+    """Simula sistema SOAP — respuesta lenta de 2s"""
+
     def __init__(self):
         super().__init__("EmpresaA", ["empresaA-topic"], "empresaA-group")
 
     def ejecutar(self):
         while True:
-            logger.info("[EmpresaA] Procesando mensajes...")
-            time.sleep(5)
+            logger.info("[EmpresaA/SOAP] Procesando request SOAP envelope...")
+            time.sleep(2)  # latencia SOAP
+            logger.info("[EmpresaA/SOAP] Response generado")
+            time.sleep(3)
 
 
 class EmpresaBServer(BaseServer):
+    """Simula sistema REST — respuesta rápida"""
+
     def __init__(self):
         super().__init__("EmpresaB", ["empresaB-topic"], "empresaB-group")
 
     def ejecutar(self):
         while True:
-            logger.info("[EmpresaB] Procesando mensajes...")
-            time.sleep(5)
+            logger.info("[EmpresaB/REST] GET /api/inventario procesado")
+            time.sleep(4)
+
+
+class EmpresaCServer(BaseServer):
+    """Simula sistema CSV via FTP"""
+
+    def __init__(self):
+        super().__init__("EmpresaC", ["empresa_c_requests"], "empresa_c_group")
+
+    def ejecutar(self):
+        while True:
+            logger.info("[EmpresaC/FTP-CSV] Leyendo archivo envios.csv via FTP...")
+            time.sleep(1)  # parseo
+            logger.info("[EmpresaC/FTP-CSV] CSV parseado, 3 registros encontrados")
+            time.sleep(4)
 
 
 class DespachoServer(BaseServer):

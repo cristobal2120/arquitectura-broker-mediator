@@ -10,6 +10,7 @@ import uvicorn
 from broker.servers import (
     EmpresaAServer,
     EmpresaBServer,
+    EmpresaCServer,   # ← NUEVO
     DespachoServer,
     NuevoEnvioServer,
 )
@@ -26,8 +27,9 @@ def main():
 
     # ── Iniciar todos los servers ──────────────────────────────
     servers = [
-        EmpresaAServer(),
-        EmpresaBServer(),
+        EmpresaAServer(),   # SOAP
+        EmpresaBServer(),   # REST
+        EmpresaCServer(),   # CSV/FTP ← NUEVO
         DespachoServer(),
         NuevoEnvioServer(),
     ]
