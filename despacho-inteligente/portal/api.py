@@ -37,7 +37,6 @@ class NuevoEnvioRequest(BaseModel):
     peso_kg: float
 
 
-# 🔥 NUEVO MODELO (Empresa C)
 class ConsultaCSVRequest(BaseModel):
     numero_guia: str
 
@@ -48,7 +47,6 @@ class ConsultaCSVRequest(BaseModel):
 
 _respuestas: Dict[str, dict] = {}
 
-
 # ──────────────────────────────────────────────
 # FUNCIONES SIMULADAS
 # ──────────────────────────────────────────────
@@ -58,6 +56,22 @@ def procesar_empresa_a(cid: str):
     _respuestas[cid] = {
         "estado": "listo",
         "respuesta": "Stock disponible en Empresa A"
+    }
+
+
+def procesar_empresa_b(cid: str, sku: str):
+    time.sleep(1)
+    _respuestas[cid] = {
+        "estado": "listo",
+        "respuesta": f"Inventario REST: SKU {sku} disponible — 47 unidades en bodega"
+    }
+
+
+def procesar_empresa_c(cid: str, numero_guia: str):
+    time.sleep(1)
+    _respuestas[cid] = {
+        "estado": "listo",
+        "respuesta": f"CSV/FTP: Guia {numero_guia} encontrada — Ciudad: Bogota, Peso: 15kg, Estado: En transito"
     }
 
 
@@ -84,7 +98,6 @@ def procesar_nuevo_envio(cid: str):
         "respuesta": "Envío registrado correctamente"
     }
 
-
 # ──────────────────────────────────────────────
 # ENDPOINTS
 # ──────────────────────────────────────────────
@@ -94,10 +107,10 @@ def root():
     return {"mensaje": "Portal activo 🚀"}
 
 
+# Empresa A
 @app.post("/consulta/empresa-a")
 def consulta_empresa_a(req: ConsultaRequest):
     cid = str(uuid.uuid4())
-
     _respuestas[cid] = {"estado": "procesando"}
 
     threading.Thread(
@@ -109,33 +122,40 @@ def consulta_empresa_a(req: ConsultaRequest):
     return {"correlation_id": cid}
 
 
-# 🔥 NUEVO ENDPOINT EMPRESA C (CSV)
-@app.post("/consulta/empresa-c")
-def consulta_empresa_c(req: ConsultaCSVRequest):
+# 🔥 Empresa B (NUEVO)
+@app.post("/consulta/empresa-b")
+def consulta_empresa_b(req: ConsultaRequest):
     cid = str(uuid.uuid4())
-
     _respuestas[cid] = {"estado": "procesando"}
 
     threading.Thread(
-        target=lambda: (
-            time.sleep(1),
-            _respuestas.update({
-                cid: {
-                    "estado": "listo",
-                    "respuesta": f"Guía {req.numero_guia} encontrada en CSV — Ciudad: Bogotá, Peso: 15kg"
-                }
-            })
-        ),
+        target=procesar_empresa_b,
+        args=(cid, req.sku),
         daemon=True
     ).start()
 
     return {"correlation_id": cid}
 
 
+# 🔥 Empresa C (AJUSTADO)
+@app.post("/consulta/empresa-c")
+def consulta_empresa_c(req: ConsultaCSVRequest):
+    cid = str(uuid.uuid4())
+    _respuestas[cid] = {"estado": "procesando"}
+
+    threading.Thread(
+        target=procesar_empresa_c,
+        args=(cid, req.numero_guia),
+        daemon=True
+    ).start()
+
+    return {"correlation_id": cid}
+
+
+# Despacho
 @app.post("/despacho")
 def despacho(req: DespachoRequest):
     cid = str(uuid.uuid4())
-
     _respuestas[cid] = {"estado": "procesando"}
 
     threading.Thread(
@@ -147,10 +167,10 @@ def despacho(req: DespachoRequest):
     return {"correlation_id": cid}
 
 
+# Nuevo envío
 @app.post("/nuevo-envio")
 def nuevo_envio(req: NuevoEnvioRequest):
     cid = str(uuid.uuid4())
-
     _respuestas[cid] = {"estado": "procesando"}
 
     threading.Thread(
@@ -162,6 +182,7 @@ def nuevo_envio(req: NuevoEnvioRequest):
     return {"correlation_id": cid}
 
 
+# Obtener respuesta
 @app.get("/respuesta/{cid}")
 def obtener_respuesta(cid: str):
     return _respuestas.get(cid, {"estado": "no_encontrado"})
